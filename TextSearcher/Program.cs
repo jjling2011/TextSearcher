@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,6 +15,8 @@ namespace TextSearcher
         [STAThread]
         static void Main()
         {
+            SetProcessDPIAware();
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             var app = new Svcs.Lanucher();
@@ -21,5 +24,8 @@ namespace TextSearcher
             Application.Run(new Views.FormMain());
             app.Dispose();
         }
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetProcessDPIAware();
     }
 }

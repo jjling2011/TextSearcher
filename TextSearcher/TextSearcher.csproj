@@ -82,6 +82,7 @@
     <Compile Include="Svcs\Configs.cs" />
     <Compile Include="Svcs\DbMgr.cs" />
     <Compile Include="Svcs\Lanucher.cs" />
+    <Compile Include="Utils\UI.cs" />
     <Compile Include="Views\Folders.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -137,7 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="app.ico" />
-    <Content Include="Files\UpdateLog.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

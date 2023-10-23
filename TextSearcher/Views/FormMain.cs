@@ -22,7 +22,7 @@ namespace TextSearcher.Views
             InitializeComponent();
             dbm.onStatus += UpdateState;
 
-            this.Text = "Text searcher v1.0";
+            this.Text = "Text searcher v1.0.1";
         }
 
         #region handler
@@ -44,6 +44,10 @@ namespace TextSearcher.Views
 
         private void clearDBToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (!Utils.UI.Confirm(@"All data will be deleted!!"))
+            {
+                return;
+            }
             Task.Run(() => dbm.Clear());
         }
 
@@ -90,59 +94,26 @@ namespace TextSearcher.Views
 
             var subItems = hit.Item.SubItems;
             int columnindex = subItems.IndexOf(hit.SubItem);
+            var path = subItems[2].Text;
             try
             {
                 switch (columnindex)
                 {
-                    case 5:
+                    case 4:
                         MessageBox.Show(hit.SubItem.Text);
                         break;
-                    case 3:
-                        var folder = Path.GetDirectoryName(subItems[3].Text);
+                    case 2:
+                        var folder = Path.GetDirectoryName(path);
                         Process.Start(folder);
                         break;
                     case 1:
-                        Process.Start(subItems[3].Text);
+                        Process.Start(path);
                         break;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-            }
-        }
-
-        private void bak_lvContent_MouseDoubleClick(object sender, MouseEventArgs e)
-        {
-            for (int itemIndex = 0; itemIndex < lvContent.Items.Count; itemIndex++)
-            {
-                ListViewItem item = lvContent.Items[itemIndex];
-                var itemRect = item.GetBounds(ItemBoundsPortion.Entire);
-                if (itemRect.Contains(e.Location))
-                {
-                    var subItems = item.SubItems;
-                    for (int i = 0; i < subItems.Count; i++)
-                    {
-                        itemRect = subItems[i].Bounds;
-                        if (itemRect.Contains(e.Location))
-                        {
-                            if (i == subItems.Count - 1)
-                            {
-                                MessageBox.Show(subItems[i].Text);
-                                return;
-                            }
-                            break;
-                        }
-                    }
-
-                    var file = item.SubItems[3].Text;
-                    var folder = Path.GetDirectoryName(file);
-                    if (!string.IsNullOrEmpty(folder))
-                    {
-                        Process.Start(folder);
-                    }
-                    return;
-                }
             }
         }
 
@@ -159,7 +130,8 @@ namespace TextSearcher.Views
             }
 
             var widths = configs.GetListViewColWidths();
-            for (int i = 0; i < widths.Count; i++)
+            var len = Math.Min(widths.Count, lvContent.Columns.Count);
+            for (int i = 0; i < len; i++)
             {
                 lvContent.Columns[i].Width = widths[i];
             }
@@ -168,10 +140,18 @@ namespace TextSearcher.Views
             {
                 Task.Run(() => dbm.Scan());
             }
+
+            tboxSearch.Focus();
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (e.CloseReason == CloseReason.UserClosing && !Utils.UI.Confirm(@"Exit app?"))
+            {
+                e.Cancel = true;
+                return;
+            }
+
             var cols = lvContent.Columns;
             var widths = new List<int>();
             for (int i = 0; i < cols.Count; i++)
@@ -182,7 +162,32 @@ namespace TextSearcher.Views
             configs.SetFormMaximumSize(WindowState == FormWindowState.Maximized);
             configs.SaveListViewColWidths(widths);
         }
+
+        private void gitHubToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var url = @"https://www.github.com/jjling2011/TextSearcher";
+            if (!Utils.UI.Confirm($"Open website:\n{url}"))
+            {
+                return;
+            }
+            Process.Start(url);
+        }
         #endregion
+
+        #region override
+
+        // https://stackoverflow.com/questions/400113/best-way-to-implement-keyboard-shortcuts-in-a-windows-forms-application
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.Control | Keys.F))
+            {
+                tboxSearch.Focus();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+        #endregion
+
         #region private
         void UpdateState(string text)
         {
@@ -207,7 +212,7 @@ namespace TextSearcher.Views
                 var item = new ListViewItem(row);
                 if ((index % 2) == 1)
                 {
-                    item.BackColor = Color.LightGray;
+                    item.BackColor = Color.Gainsboro;
                 }
                 lvContent.Items.Add(item);
                 index++;

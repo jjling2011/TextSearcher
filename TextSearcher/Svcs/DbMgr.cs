@@ -64,6 +64,8 @@ namespace TextSearcher.Svcs
             MarkNotExistFiles();
             Msg("Scanning ...");
             var fis = Configs.Instance.GetFolderInfos();
+            const int SaveChangesSize = 25 * 1024 * 1024;
+            var size = 0;
             foreach (var fi in fis)
             {
                 if (!fi.isScan)
@@ -96,23 +98,29 @@ namespace TextSearcher.Svcs
                     }
 
                     Msg($"Add: {file}");
-                    AddToDb(file, modify, ext);
-                }
-                lock (db)
-                {
-                    db.SaveChanges();
+                    size += AddToDb(file, modify, ext);
+                    if (size > SaveChangesSize)
+                    {
+                        size = 0;
+                        SaveChanges();
+                    }
                 }
             }
-            lock (db)
-            {
-                db.SaveChanges();
-            }
+            SaveChanges();
             Configs.Instance.SetLastScan(DateTime.Now);
             Msg("Ready!");
         }
         #endregion
 
         #region private
+        void SaveChanges()
+        {
+            lock (db)
+            {
+                db.SaveChanges();
+            }
+        }
+
         void MarkNotExistFiles()
         {
             lock (db)
@@ -134,12 +142,7 @@ namespace TextSearcher.Svcs
 
         private List<Models.TextFileInfo> GetMatchedRecords(List<string> kws)
         {
-            List<Models.TextFileInfo> r;
-            lock (db)
-            {
-                // 我知道这样写效率低，但是不知道哪里出问题就是搜索不了中文
-                r = db.TextFiles.Where(fi => !fi.deleted).ToList();
-            }
+            IQueryable<Models.TextFileInfo> q;
 
             var folders = Configs.Instance
                 .GetFolderInfos()
@@ -147,28 +150,22 @@ namespace TextSearcher.Svcs
                 .Select(f => f.folder)
                 .ToList();
 
-            return r.Where(fi =>
+            lock (db)
+            {
+                q = db.TextFiles.Where(fi => !fi.deleted);
+                for (int i = 0; i < folders.Count; i++)
                 {
-                    var p = fi.path;
-                    foreach (var folder in folders)
-                    {
-                        if (p.StartsWith(folder))
-                        {
-                            return false;
-                        }
-                    }
+                    var f = folders[i];
+                    q = q.Where(fi => !fi.path.StartsWith(f));
+                }
 
-                    var c = fi.content;
-                    foreach (var kw in kws)
-                    {
-                        if (!c.Contains(kw))
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
-                })
-                .ToList();
+                for (int i = 0; i < kws.Count; i++)
+                {
+                    var kw = kws[i];
+                    q = q.Where(fi => fi.content.Contains(kw));
+                }
+                return q.ToList();
+            }
         }
 
         private List<Models.TextFileInfo> GetTop100Records()
@@ -197,7 +194,7 @@ namespace TextSearcher.Svcs
             }
         }
 
-        void AddToDb(string file, DateTime modify, string ext)
+        int AddToDb(string file, DateTime modify, string ext)
         {
             var fi = new Models.TextFileInfo()
             {
@@ -227,6 +224,7 @@ namespace TextSearcher.Svcs
                     record.deleted = fi.deleted;
                 }
             }
+            return fi.content.Length;
         }
 
         bool ValidateExtension(List<string> exts, string ext)

@@ -35,9 +35,8 @@ namespace TextSearcher.Views
             this.tsStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lvContent = new System.Windows.Forms.ListView();
-            this.colSpaceHolder = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.colNo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colFilename = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.colExt = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colContent = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -52,6 +51,7 @@ namespace TextSearcher.Views
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gitHubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -71,11 +71,11 @@ namespace TextSearcher.Views
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.tableLayoutPanel1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(547, 514);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(478, 443);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(547, 561);
+            this.toolStripContainer1.Size = new System.Drawing.Size(478, 490);
             this.toolStripContainer1.TabIndex = 0;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
@@ -90,14 +90,14 @@ namespace TextSearcher.Views
             this.tsStatus});
             this.statusStrip1.Location = new System.Drawing.Point(0, 0);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(547, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(478, 22);
             this.statusStrip1.TabIndex = 0;
             // 
             // tsStatus
             // 
             this.tsStatus.Name = "tsStatus";
-            this.tsStatus.Size = new System.Drawing.Size(47, 17);
-            this.tsStatus.Text = "Ready.";
+            this.tsStatus.Size = new System.Drawing.Size(48, 17);
+            this.tsStatus.Text = "Ready!";
             // 
             // tableLayoutPanel1
             // 
@@ -111,15 +111,14 @@ namespace TextSearcher.Views
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(547, 514);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(478, 443);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // lvContent
             // 
             this.lvContent.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.colSpaceHolder,
+            this.colNo,
             this.colFilename,
-            this.colExt,
             this.colPath,
             this.colDate,
             this.colContent});
@@ -129,26 +128,21 @@ namespace TextSearcher.Views
             this.lvContent.HideSelection = false;
             this.lvContent.Location = new System.Drawing.Point(3, 28);
             this.lvContent.Name = "lvContent";
-            this.lvContent.Size = new System.Drawing.Size(541, 483);
+            this.lvContent.Size = new System.Drawing.Size(472, 412);
             this.lvContent.TabIndex = 1;
             this.lvContent.UseCompatibleStateImageBehavior = false;
             this.lvContent.View = System.Windows.Forms.View.Details;
             this.lvContent.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.lvContent_MouseDoubleClick);
             // 
-            // colSpaceHolder
+            // colNo
             // 
-            this.colSpaceHolder.Text = "Index";
-            this.colSpaceHolder.Width = 69;
+            this.colNo.Text = "No.";
+            this.colNo.Width = 69;
             // 
             // colFilename
             // 
             this.colFilename.Text = "Filename";
             this.colFilename.Width = 103;
-            // 
-            // colExt
-            // 
-            this.colExt.Text = "ext.";
-            this.colExt.Width = 48;
             // 
             // colPath
             // 
@@ -167,11 +161,10 @@ namespace TextSearcher.Views
             // 
             // tboxSearch
             // 
-            this.tboxSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tboxSearch.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tboxSearch.Location = new System.Drawing.Point(3, 3);
             this.tboxSearch.Name = "tboxSearch";
-            this.tboxSearch.Size = new System.Drawing.Size(541, 21);
+            this.tboxSearch.Size = new System.Drawing.Size(472, 21);
             this.tboxSearch.TabIndex = 0;
             this.tboxSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tboxSearch_KeyDown);
             // 
@@ -184,7 +177,7 @@ namespace TextSearcher.Views
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(547, 25);
+            this.menuStrip1.Size = new System.Drawing.Size(478, 25);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -250,15 +243,24 @@ namespace TextSearcher.Views
             // 
             // aboutToolStripMenuItem
             // 
+            this.aboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.gitHubToolStripMenuItem});
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(55, 21);
             this.aboutToolStripMenuItem.Text = "About";
+            // 
+            // gitHubToolStripMenuItem
+            // 
+            this.gitHubToolStripMenuItem.Name = "gitHubToolStripMenuItem";
+            this.gitHubToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+            this.gitHubToolStripMenuItem.Text = "GitHub";
+            this.gitHubToolStripMenuItem.Click += new System.EventHandler(this.gitHubToolStripMenuItem_Click);
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(547, 561);
+            this.ClientSize = new System.Drawing.Size(478, 490);
             this.Controls.Add(this.toolStripContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
@@ -291,7 +293,7 @@ namespace TextSearcher.Views
         private System.Windows.Forms.ToolStripStatusLabel tsStatus;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ListView lvContent;
-        private System.Windows.Forms.ColumnHeader colSpaceHolder;
+        private System.Windows.Forms.ColumnHeader colNo;
         private System.Windows.Forms.ColumnHeader colFilename;
         private System.Windows.Forms.ColumnHeader colPath;
         private System.Windows.Forms.ColumnHeader colDate;
@@ -307,6 +309,6 @@ namespace TextSearcher.Views
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-        private System.Windows.Forms.ColumnHeader colExt;
+        private System.Windows.Forms.ToolStripMenuItem gitHubToolStripMenuItem;
     }
 }

@@ -33,7 +33,6 @@ namespace TextSearcher.Models
             {
                 "",
                 file,
-                ext,
                 path,
                 $"{modify.ToLongDateString()} {modify.ToShortTimeString()}",
                 content,
