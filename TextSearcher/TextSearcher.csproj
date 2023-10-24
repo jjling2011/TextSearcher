@@ -82,6 +82,7 @@
     <Compile Include="Svcs\Configs.cs" />
     <Compile Include="Svcs\DbMgr.cs" />
     <Compile Include="Svcs\Lanucher.cs" />
+    <Compile Include="Utils\Helpers.cs" />
     <Compile Include="Utils\UI.cs" />
     <Compile Include="Views\Folders.cs">
       <SubType>UserControl</SubType>

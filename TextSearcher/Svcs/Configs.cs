@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,16 +23,46 @@ namespace TextSearcher.Svcs
         }
 
         #region public
-        public DateTime GetLastScan()
+        public Rectangle GetFormMainBounds()
         {
-            return options.lastScan;
+            var bs = options.formMainBounds
+                ?.Split(',')
+                ?.Select(s =>
+                {
+                    if (int.TryParse(s, out var n))
+                    {
+                        return n;
+                    }
+                    return 0;
+                })
+                ?.ToList();
+            if (bs == null || bs.Count != 4)
+            {
+                return new Rectangle(0, 0, 0, 0);
+            }
+            return new Rectangle(bs[0], bs[1], bs[2], bs[3]);
         }
 
-        public void SetLastScan(DateTime datetime)
+        public void SaveFormMainBunds(string bounds)
+        {
+            if (options.formMainBounds != bounds)
+            {
+                options.formMainBounds = bounds;
+                SaveToFile();
+            }
+        }
+
+        public bool IsLastScanOutdated()
+        {
+            var last = options.lastScan;
+            return last.AddHours(12) < DateTime.Now;
+        }
+
+        public void UpdateLastScanTimestamp()
         {
             lock (rwlock)
             {
-                options.lastScan = datetime;
+                options.lastScan = DateTime.Now;
                 SaveToFile();
             }
         }
@@ -52,7 +83,7 @@ namespace TextSearcher.Svcs
             return options.isFormMaximumSize;
         }
 
-        public void SetFormMaximumSize(bool isMax)
+        public void SaveFormMaximumSize(bool isMax)
         {
             if (options.isFormMaximumSize != isMax)
             {

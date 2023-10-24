@@ -22,7 +22,7 @@ namespace TextSearcher.Views
             InitializeComponent();
             dbm.onStatus += UpdateState;
 
-            this.Text = "Text searcher v1.0.1";
+            this.Text = "Text searcher v1.0.2";
         }
 
         #region handler
@@ -124,10 +124,7 @@ namespace TextSearcher.Views
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-            if (configs.IsFormMaximum())
-            {
-                this.WindowState = FormWindowState.Maximized;
-            }
+            SetFormBounds();
 
             var widths = configs.GetListViewColWidths();
             var len = Math.Min(widths.Count, lvContent.Columns.Count);
@@ -136,12 +133,33 @@ namespace TextSearcher.Views
                 lvContent.Columns[i].Width = widths[i];
             }
 
-            if (configs.GetLastScan().AddHours(12) < DateTime.Now)
+            if (configs.IsLastScanOutdated())
             {
                 Task.Run(() => dbm.Scan());
             }
 
             tboxSearch.Focus();
+        }
+
+        private void SetFormBounds()
+        {
+            if (configs.IsFormMaximum())
+            {
+                this.WindowState = FormWindowState.Maximized;
+                return;
+            }
+
+            var rect = configs.GetFormMainBounds();
+            if (rect.Width < 100 || rect.Height < 100)
+            {
+                return;
+            }
+
+            var bounds = Screen.FromControl(this).Bounds;
+            this.Left = Math.Max(0, rect.Left);
+            this.Top = Math.Max(0, rect.Top);
+            this.Width = Math.Min(rect.Width, bounds.Width - rect.Left);
+            this.Height = Math.Min(rect.Height, bounds.Height - rect.Top);
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
@@ -159,7 +177,9 @@ namespace TextSearcher.Views
                 widths.Add(cols[i].Width);
             }
 
-            configs.SetFormMaximumSize(WindowState == FormWindowState.Maximized);
+            var bounds = new int[] { this.Left, this.Top, this.Width, this.Height };
+            configs.SaveFormMainBunds(string.Join(",", bounds));
+            configs.SaveFormMaximumSize(WindowState == FormWindowState.Maximized);
             configs.SaveListViewColWidths(widths);
         }
 

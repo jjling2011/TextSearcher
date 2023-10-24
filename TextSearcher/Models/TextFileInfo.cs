@@ -27,16 +27,19 @@ namespace TextSearcher.Models
 
         public string content { get; set; }
 
+        public void Copy(TextFileInfo o)
+        {
+            file = o.file;
+            ext = o.ext;
+            path = o.path;
+            modify = o.modify;
+            deleted = o.deleted;
+            content = o.content;
+        }
+
         public string[] ToArray()
         {
-            return new string[]
-            {
-                "",
-                file,
-                path,
-                $"{modify.ToLongDateString()} {modify.ToShortTimeString()}",
-                content,
-            };
+            return new string[] { "", file, path, Utils.Helpers.ToYmdHms(modify), content, };
         }
     }
 }

@@ -71,11 +71,11 @@ namespace TextSearcher.Views
             // toolStripContainer1.ContentPanel
             // 
             this.toolStripContainer1.ContentPanel.Controls.Add(this.tableLayoutPanel1);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(478, 443);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(372, 313);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
             this.toolStripContainer1.Name = "toolStripContainer1";
-            this.toolStripContainer1.Size = new System.Drawing.Size(478, 490);
+            this.toolStripContainer1.Size = new System.Drawing.Size(372, 360);
             this.toolStripContainer1.TabIndex = 0;
             this.toolStripContainer1.Text = "toolStripContainer1";
             // 
@@ -90,7 +90,7 @@ namespace TextSearcher.Views
             this.tsStatus});
             this.statusStrip1.Location = new System.Drawing.Point(0, 0);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(478, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(372, 22);
             this.statusStrip1.TabIndex = 0;
             // 
             // tsStatus
@@ -111,7 +111,7 @@ namespace TextSearcher.Views
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(478, 443);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(372, 313);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // lvContent
@@ -128,7 +128,7 @@ namespace TextSearcher.Views
             this.lvContent.HideSelection = false;
             this.lvContent.Location = new System.Drawing.Point(3, 28);
             this.lvContent.Name = "lvContent";
-            this.lvContent.Size = new System.Drawing.Size(472, 412);
+            this.lvContent.Size = new System.Drawing.Size(366, 282);
             this.lvContent.TabIndex = 1;
             this.lvContent.UseCompatibleStateImageBehavior = false;
             this.lvContent.View = System.Windows.Forms.View.Details;
@@ -164,7 +164,7 @@ namespace TextSearcher.Views
             this.tboxSearch.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tboxSearch.Location = new System.Drawing.Point(3, 3);
             this.tboxSearch.Name = "tboxSearch";
-            this.tboxSearch.Size = new System.Drawing.Size(472, 21);
+            this.tboxSearch.Size = new System.Drawing.Size(366, 21);
             this.tboxSearch.TabIndex = 0;
             this.tboxSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tboxSearch_KeyDown);
             // 
@@ -177,7 +177,7 @@ namespace TextSearcher.Views
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(478, 25);
+            this.menuStrip1.Size = new System.Drawing.Size(372, 25);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -237,8 +237,8 @@ namespace TextSearcher.Views
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(122, 22);
-            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            this.optionsToolStripMenuItem.Text = "Configs";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
@@ -260,7 +260,7 @@ namespace TextSearcher.Views
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(478, 490);
+            this.ClientSize = new System.Drawing.Size(372, 360);
             this.Controls.Add(this.toolStripContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;

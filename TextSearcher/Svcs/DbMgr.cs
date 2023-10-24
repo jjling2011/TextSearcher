@@ -12,27 +12,25 @@ namespace TextSearcher.Svcs
         public event Action<string> onMessage;
         public event Action<string> onStatus;
 
-        readonly Models.LocalDbContext db = new Models.LocalDbContext();
-
         DbMgr() { }
 
         #region public
         public void Clear()
         {
-            Msg("Clearing ...");
-            lock (db)
+            Msg("Clearing...");
+            Exec(db =>
             {
                 var records = db.TextFiles.ToList();
                 db.TextFiles.RemoveRange(records);
                 db.SaveChanges();
-            }
+            });
             Msg("Ready!");
         }
 
         public void Compact()
         {
-            Msg("Deleting ...");
-            lock (db)
+            Msg("Deleting...");
+            Exec(db =>
             {
                 var records = db.TextFiles.Where(fi => fi.deleted).ToList();
                 foreach (var record in records)
@@ -41,7 +39,7 @@ namespace TextSearcher.Svcs
                     db.TextFiles.Remove(record);
                 }
                 db.SaveChanges();
-            }
+            });
             Msg("Ready!");
         }
 
@@ -60,70 +58,80 @@ namespace TextSearcher.Svcs
 
         public void Scan()
         {
-            Msg("Marking ...");
+            Msg("Marking...");
             MarkNotExistFiles();
-            Msg("Scanning ...");
-            var fis = Configs.Instance.GetFolderInfos();
-            const int SaveChangesSize = 25 * 1024 * 1024;
-            var size = 0;
+
+            Msg("Scanning...");
+            var fis = Configs.Instance.GetFolderInfos().Where(fi => fi.isScan).ToList();
+
+            var c = 0;
             foreach (var fi in fis)
             {
-                if (!fi.isScan)
+                Msg($"Scan: {fi.folder}");
+                Exec(db =>
+                {
+                    try
+                    {
+                        c += ScanOneFolder(db, fi);
+                    }
+                    catch { }
+                    db.SaveChanges();
+                });
+            }
+            Configs.Instance.UpdateLastScanTimestamp();
+            Msg($"Ready! {c} new records.");
+        }
+
+        #endregion
+
+        #region private
+        int ScanOneFolder(Models.LocalDbContext db, Models.FolderInfo fi)
+        {
+            const int SaveChangesSize = 25 * 1024 * 1024;
+
+            var exts = ParseExtensions(fi.exts);
+            var c = 0;
+            var size = 0;
+
+            foreach (
+                var file in Directory.EnumerateFiles(fi.folder, "*.*", SearchOption.AllDirectories)
+            )
+            {
+                var ext = Path.GetExtension(file);
+                if (!ValidateExtension(exts, ext))
                 {
                     continue;
                 }
 
-                var folder = fi.folder;
-                var exts = fi.exts
-                    ?.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    ?.Select(e => $".{e}")
-                    ?.ToList();
-
-                Msg($"Scan folder: {folder}");
-                foreach (
-                    var file in Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
-                )
+                var modify = File.GetLastWriteTime(file);
+                if (IsDuplicated(file, modify))
                 {
-                    var ext = Path.GetExtension(file);
-                    if (!ValidateExtension(exts, ext))
-                    {
-                        continue;
-                    }
+                    Msg($"Duplicated: {file}");
+                    continue;
+                }
 
-                    var modify = File.GetLastWriteTime(file);
-                    if (IsDuplicated(file, modify))
-                    {
-                        Msg($"Duplicated: {file}");
-                        continue;
-                    }
-
-                    Msg($"Add: {file}");
-                    size += AddToDb(file, modify, ext);
-                    if (size > SaveChangesSize)
-                    {
-                        size = 0;
-                        SaveChanges();
-                    }
+                Msg($"Add: {file}");
+                c++;
+                size += AddToDb(db, file, modify, ext);
+                if (size > SaveChangesSize)
+                {
+                    size = 0;
+                    db.SaveChanges();
                 }
             }
-            SaveChanges();
-            Configs.Instance.SetLastScan(DateTime.Now);
-            Msg("Ready!");
+            return c;
         }
-        #endregion
 
-        #region private
-        void SaveChanges()
+        List<string> ParseExtensions(string exts)
         {
-            lock (db)
-            {
-                db.SaveChanges();
-            }
+            return exts?.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                ?.Select(e => $".{e}")
+                ?.ToList();
         }
 
         void MarkNotExistFiles()
         {
-            lock (db)
+            Exec(db =>
             {
                 var records = db.TextFiles.Where(fi => !fi.deleted);
                 foreach (var record in records)
@@ -137,25 +145,24 @@ namespace TextSearcher.Svcs
                     record.deleted = true;
                 }
                 db.SaveChanges();
-            }
+            });
         }
 
         private List<Models.TextFileInfo> GetMatchedRecords(List<string> kws)
         {
-            IQueryable<Models.TextFileInfo> q;
-
-            var folders = Configs.Instance
+            var excludedFolders = Configs.Instance
                 .GetFolderInfos()
                 .Where(f => !f.isSearch)
                 .Select(f => f.folder)
                 .ToList();
 
-            lock (db)
+            var r = new List<Models.TextFileInfo>();
+            Exec(db =>
             {
-                q = db.TextFiles.Where(fi => !fi.deleted);
-                for (int i = 0; i < folders.Count; i++)
+                var q = db.TextFiles.Where(fi => !fi.deleted);
+                for (int i = 0; i < excludedFolders.Count; i++)
                 {
-                    var f = folders[i];
+                    var f = excludedFolders[i];
                     q = q.Where(fi => !fi.path.StartsWith(f));
                 }
 
@@ -164,23 +171,27 @@ namespace TextSearcher.Svcs
                     var kw = kws[i];
                     q = q.Where(fi => fi.content.Contains(kw));
                 }
-                return q.ToList();
-            }
+                r = q.ToList();
+            });
+            return r;
         }
 
         private List<Models.TextFileInfo> GetTop100Records()
         {
-            lock (db)
+            var r = new List<Models.TextFileInfo>();
+            Exec(db =>
             {
-                return db.TextFiles.Where(fi => !fi.deleted).Take(100).ToList();
-            }
+                r = db.TextFiles.Where(fi => !fi.deleted).Take(100).ToList();
+            });
+            return r;
         }
 
         bool IsDuplicated(string path, DateTime modify)
         {
-            lock (db)
+            Models.TextFileInfo record = null;
+            Exec(db =>
             {
-                var record = db.TextFiles
+                record = db.TextFiles
                     .Where(fi => fi.path == path)
                     .Where(fi => fi.modify == modify)
                     .FirstOrDefault();
@@ -190,41 +201,51 @@ namespace TextSearcher.Svcs
                     record.deleted = false;
                     db.SaveChanges();
                 }
-                return record != null;
-            }
+            });
+            return record != null;
         }
 
-        int AddToDb(string file, DateTime modify, string ext)
+        int AddToDb(Models.LocalDbContext db, string file, DateTime modify, string ext)
         {
-            var fi = new Models.TextFileInfo()
+            var fi = ReadFile(file, modify, ext);
+            if (fi == null)
             {
-                modify = modify,
-                content =
-                    File.ReadAllText(file)?.Replace("\r", "")?.Replace("\n", " ")?.ToLower() ?? "",
-                ext = ext,
-                file = Path.GetFileName(file),
-                path = file,
-                deleted = false,
-            };
-
-            lock (db)
-            {
-                var record = db.TextFiles.FirstOrDefault(info => info.path == file);
-                if (record == null)
-                {
-                    db.TextFiles.Add(fi);
-                }
-                else
-                {
-                    record.ext = fi.ext;
-                    record.content = fi.content;
-                    record.modify = fi.modify;
-                    record.file = fi.file;
-                    record.path = fi.path;
-                    record.deleted = fi.deleted;
-                }
+                Msg($"Error: {file}");
+                return 0;
             }
+
+            var record = db.TextFiles.FirstOrDefault(info => info.path == file);
+            if (record == null)
+            {
+                db.TextFiles.Add(fi);
+            }
+            else
+            {
+                record.Copy(fi);
+            }
+
             return fi.content.Length;
+        }
+
+        Models.TextFileInfo ReadFile(string file, DateTime modify, string ext)
+        {
+            try
+            {
+                var content =
+                    File.ReadAllText(file)?.Replace("\r", "")?.Replace("\n", " ")?.ToLower() ?? "";
+
+                return new Models.TextFileInfo()
+                {
+                    modify = modify,
+                    content = content,
+                    ext = ext,
+                    file = Path.GetFileName(file),
+                    path = file,
+                    deleted = false,
+                };
+            }
+            catch { }
+            return null;
         }
 
         bool ValidateExtension(List<string> exts, string ext)
@@ -251,6 +272,8 @@ namespace TextSearcher.Svcs
 
         void UpdateStatus()
         {
+            const int UPDATE_INTERVAL = 1;
+
             if (newMsg == curMsg || waiting)
             {
                 return;
@@ -264,14 +287,27 @@ namespace TextSearcher.Svcs
                 onStatus?.Invoke(curMsg);
             }
 
-            if (DateTime.Now.Ticks - stamp > 2 * TimeSpan.TicksPerSecond)
+            if (DateTime.Now.Ticks - stamp > UPDATE_INTERVAL * TimeSpan.TicksPerSecond)
             {
                 update();
             }
             else
             {
                 waiting = true;
-                Task.Delay(TimeSpan.FromSeconds(2)).ContinueWith(_ => update());
+                Task.Delay(TimeSpan.FromSeconds(UPDATE_INTERVAL)).ContinueWith(_ => update());
+            }
+        }
+
+        readonly object dbRwlock = new object();
+
+        void Exec(Action<Models.LocalDbContext> job)
+        {
+            lock (dbRwlock)
+            {
+                using (var db = new Models.LocalDbContext())
+                {
+                    job(db);
+                }
             }
         }
         #endregion
@@ -295,7 +331,6 @@ namespace TextSearcher.Svcs
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    db?.Dispose();
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器

@@ -12,6 +12,7 @@ namespace TextSearcher.Models
         public List<int> lvColWidths = new List<int>();
         public bool isFormMaximumSize = false;
         public DateTime lastScan = new DateTime(1970, 1, 1);
+        public string formMainBounds = "";
 
         public Options() { }
     }
