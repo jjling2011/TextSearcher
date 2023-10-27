@@ -43,17 +43,29 @@ namespace TextSearcher.Svcs
             Msg("Ready!");
         }
 
-        public List<Models.TextFileInfo> Search(string keywords)
+        public List<Models.TextFileInfo> Search(List<string> keywords)
         {
-            var kws = keywords
-                ?.ToLower()
-                ?.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                ?.ToList();
             Msg("Searching...");
             var records =
-                kws == null || kws.Count < 1 ? GetTop100Records() : GetMatchedRecords(kws);
+                keywords == null || keywords.Count < 1
+                    ? GetTop100Records()
+                    : GetMatchedRecords(keywords);
             Msg($"{records.Count} records");
             return records;
+        }
+
+        public string GetContent(string path)
+        {
+            var content = "";
+            Exec(db =>
+            {
+                var record = db.TextFiles.FirstOrDefault(fi => fi.path == path);
+                if (record != null)
+                {
+                    content = record.content;
+                }
+            });
+            return content;
         }
 
         public void Scan()
@@ -181,7 +193,11 @@ namespace TextSearcher.Svcs
             var r = new List<Models.TextFileInfo>();
             Exec(db =>
             {
-                r = db.TextFiles.Where(fi => !fi.deleted).Take(100).ToList();
+                r = db.TextFiles
+                    .Where(fi => !fi.deleted)
+                    .OrderByDescending(fi => fi.modify)
+                    .Take(100)
+                    .ToList();
             });
             return r;
         }

@@ -22,7 +22,7 @@ namespace TextSearcher.Views
             InitializeComponent();
             dbm.onStatus += UpdateState;
 
-            this.Text = "Text searcher v1.0.2";
+            this.Text = "Text searcher v1.0.3";
         }
 
         #region handler
@@ -69,7 +69,11 @@ namespace TextSearcher.Views
             }
             e.SuppressKeyPress = true;
 
-            var kws = tboxSearch.Text;
+            var kws = tboxSearch.Text
+                ?.ToLower()
+                ?.Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries)
+                ?.ToList();
+
             Task.Run(() =>
             {
                 var records = dbm.Search(kws).OrderByDescending(fi => fi.modify);
@@ -77,7 +81,7 @@ namespace TextSearcher.Views
                     (MethodInvoker)
                         delegate
                         {
-                            ShowSearchResult(records);
+                            ShowSearchResult(records, kws);
                         }
                 );
             });
@@ -100,7 +104,8 @@ namespace TextSearcher.Views
                 switch (columnindex)
                 {
                     case 4:
-                        MessageBox.Show(hit.SubItem.Text);
+                        var content = dbm.GetContent(path);
+                        MessageBox.Show(content);
                         break;
                     case 2:
                         var folder = Path.GetDirectoryName(path);
@@ -220,14 +225,17 @@ namespace TextSearcher.Views
             );
         }
 
-        void ShowSearchResult(IEnumerable<Models.TextFileInfo> records)
+        void ShowSearchResult(
+            IEnumerable<Models.TextFileInfo> records,
+            IEnumerable<string> keywords
+        )
         {
             var index = 1;
             lvContent.SuspendLayout();
             lvContent.Items.Clear();
             foreach (var record in records)
             {
-                var row = record.ToArray();
+                var row = record.ToArray(keywords);
                 row[0] = index.ToString();
                 var item = new ListViewItem(row);
                 if ((index % 2) == 1)

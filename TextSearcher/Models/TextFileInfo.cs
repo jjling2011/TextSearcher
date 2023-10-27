@@ -37,9 +37,10 @@ namespace TextSearcher.Models
             content = o.content;
         }
 
-        public string[] ToArray()
+        public string[] ToArray(IEnumerable<string> keywords)
         {
-            return new string[] { "", file, path, Utils.Helpers.ToYmdHms(modify), content, };
+            var parts = Utils.Helpers.GetKeywordParts(content, keywords);
+            return new string[] { "", file, path, Utils.Helpers.ToYmdHms(modify), parts };
         }
     }
 }

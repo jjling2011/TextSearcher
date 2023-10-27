@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\LocalDbContext.cs" />
+    <Compile Include="Models\StrRange.cs" />
     <Compile Include="Models\TextFileInfo.cs" />
     <Compile Include="Models\FolderInfo.cs" />
     <Compile Include="Models\Options.cs" />
