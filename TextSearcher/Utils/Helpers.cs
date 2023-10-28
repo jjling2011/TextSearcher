@@ -22,17 +22,23 @@ namespace TextSearcher.Utils
                 return len > maxLen ? content.Substring(0, maxLen) + "..." : content;
             }
 
-            const int margin = 8;
             var ranges = new List<Models.StrRange>();
             foreach (var keyword in keywords)
             {
-                var idx = content.IndexOf(keyword);
-                ranges.Add(new Models.StrRange(idx - margin, idx + keyword.Length + margin));
+                var range = GetRangeByKeyword(content, keyword);
+                ranges.Add(range);
             }
 
+            ranges = FixStrRange(ranges, content.Length);
             var parts = JoinRanges(len, ranges);
             var t = parts.Select(r => content.Substring(r.start, r.end - r.start)).ToList();
             var result = string.Join("...", t);
+            result = PadResult(ranges, result, len);
+            return result;
+        }
+
+        static string PadResult(List<Models.StrRange> ranges, string result, int len)
+        {
             if (ranges.Count > 0)
             {
                 if (ranges.First().start > 0)
@@ -48,6 +54,62 @@ namespace TextSearcher.Utils
             return result;
         }
 
+        static int CharWidth(char ch)
+        {
+            if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z'))
+            {
+                return 1;
+            }
+            if (char.IsPunctuation(ch) || char.IsSeparator(ch))
+            {
+                return 1;
+            }
+            return 2;
+        }
+
+        static Models.StrRange GetRangeByKeyword(string content, string keyword)
+        {
+            var margin = 10;
+            var idx = content.IndexOf(keyword);
+            int start = idx;
+            var i = 0;
+            while (i < margin)
+            {
+                start = idx - i;
+                if (start < 0)
+                {
+                    break;
+                }
+                var c = content[start];
+                i += CharWidth(c);
+            }
+            var end = idx + keyword.Length;
+            i = 0;
+            while (i < margin)
+            {
+                end = idx + keyword.Length + i;
+                if (end >= content.Length)
+                {
+                    break;
+                }
+                var c = content[end];
+                i += CharWidth(c);
+            }
+            return new Models.StrRange(start, end);
+        }
+
+        public static List<Models.StrRange> FixStrRange(
+            IEnumerable<Models.StrRange> ranges,
+            int len
+        )
+        {
+            return ranges
+                .Select(r => r.Fix(len) ? r : null)
+                .Where(r => r != null)
+                .OrderBy(r => r.start)
+                .ToList();
+        }
+
         public static List<Models.StrRange> JoinRanges(int len, IEnumerable<Models.StrRange> ranges)
         {
             var result = new List<Models.StrRange>();
@@ -56,13 +118,8 @@ namespace TextSearcher.Utils
                 return result;
             }
 
-            var t = ranges
-                .Select(r => r.Fix(len) ? r : null)
-                .Where(r => r != null)
-                .OrderBy(r => r.start)
-                .ToList();
             Models.StrRange prev = null;
-            foreach (var cur in t)
+            foreach (var cur in ranges)
             {
                 if (prev == null)
                 {

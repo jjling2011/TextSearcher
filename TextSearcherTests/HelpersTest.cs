@@ -10,8 +10,8 @@ namespace TextSearcherTests
     public class HelpersTest
     {
         [DataTestMethod]
-        [DataRow("fox jumps 棕毛", "...k brown fox jumps over th...og 那只敏捷的棕毛狐狸跃过那只懒狗")]
-        [DataRow("The 懒狗", "the quick b...棕毛狐狸跃过那只懒狗")]
+        [DataRow("fox jumps 棕毛", "...ck brown fox jumps over the...dog 那只敏捷的棕毛狐狸跃过那只懒狗")]
+        [DataRow("The 懒狗", "the quick br...棕毛狐狸跃过那只懒狗")]
         public void GetKeywordPartsTest(string keywords, string expected)
         {
             const string src = "The quick brown fox jumps over the lazy dog 那只敏捷的棕毛狐狸跃过那只懒狗";
@@ -45,7 +45,8 @@ namespace TextSearcherTests
             var ranges = split(source);
             var expected = split(result);
 
-            var join = TextSearcher.Utils.Helpers.JoinRanges(len, ranges);
+            ranges = Helpers.FixStrRange(ranges, len);
+            var join = Helpers.JoinRanges(len, ranges);
             Assert.AreEqual(expected.Count, join.Count);
 
             for (int i = 0; i < expected.Count; i++)

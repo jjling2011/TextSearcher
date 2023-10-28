@@ -22,7 +22,7 @@ namespace TextSearcher.Views
             InitializeComponent();
             dbm.onStatus += UpdateState;
 
-            this.Text = "Text searcher v1.0.3";
+            this.Text = "Text searcher v1.0.4";
         }
 
         #region handler
