@@ -22,7 +22,7 @@ namespace TextSearcher.Views
             InitializeComponent();
             dbm.onStatus += UpdateState;
 
-            this.Text = "Text searcher v1.0.4";
+            this.Text = "Text searcher v1.0.5";
         }
 
         #region handler
@@ -169,7 +169,10 @@ namespace TextSearcher.Views
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (e.CloseReason == CloseReason.UserClosing && !Utils.UI.Confirm(@"Exit app?"))
+            // do not need to confirm
+            if (
+                false && e.CloseReason == CloseReason.UserClosing && !Utils.UI.Confirm(@"Exit app?")
+            )
             {
                 e.Cancel = true;
                 return;
@@ -216,13 +219,19 @@ namespace TextSearcher.Views
         #region private
         void UpdateState(string text)
         {
-            this.Invoke(
-                (MethodInvoker)
-                    delegate
-                    {
-                        tsStatus.Text = text;
-                    }
-            );
+            if (this.IsDisposed)
+                return;
+            try
+            {
+                this.Invoke(
+                    (MethodInvoker)
+                        delegate
+                        {
+                            tsStatus.Text = text;
+                        }
+                );
+            }
+            catch { }
         }
 
         void ShowSearchResult(

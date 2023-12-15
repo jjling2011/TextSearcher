@@ -79,6 +79,10 @@ namespace TextSearcher.Svcs
             var c = 0;
             foreach (var fi in fis)
             {
+                if (isClosing)
+                {
+                    return;
+                }
                 Msg($"Scan: {fi.folder}");
                 Exec(db =>
                 {
@@ -315,11 +319,16 @@ namespace TextSearcher.Svcs
         }
 
         readonly object dbRwlock = new object();
+        bool isClosing = false;
 
         void Exec(Action<Models.LocalDbContext> job)
         {
             lock (dbRwlock)
             {
+                if (isClosing)
+                {
+                    return;
+                }
                 using (var db = new Models.LocalDbContext())
                 {
                     job(db);
@@ -347,6 +356,11 @@ namespace TextSearcher.Svcs
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
+                    isClosing = true;
+                    lock (dbRwlock)
+                    {
+                        Console.WriteLine("Waiting to exit...");
+                    }
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
